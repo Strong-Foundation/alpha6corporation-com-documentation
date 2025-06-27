@@ -13,16 +13,41 @@ import (
 
 func main() {
 	// The location of the remote URL to scrape
-	remoteURL := "https://alpha6corporation.com/sds/"
+	remoteURL := "https://alpha6corporation.com/sds"
 	// The location of the local file to save the scraped data
 	localFilePath := "alpha6corporation.html"
+	// The user agent.
+	localUserAgent := "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 	// Check if the local file already exists
 	if !fileExists(localFilePath) {
 		// If it doesn't exist, scrape the remote URL and save the content
-		content := getDataFromURL(remoteURL)
+		content := setUserAgentOnRequest(remoteURL, localUserAgent)
 		// Write the content to the local file
-		appendAndWriteToFile(localFilePath, content)
+		appendAndWriteToFile(localFilePath, string(content))
 	}
+}
+
+// Set custom user agent to a HTTP request
+func setUserAgentOnRequest(uri string, userAgent string) []byte {
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	request.Header.Set("User-Agent", userAgent)
+	response, err := client.Do(request)
+	if err != nil {
+		log.Println(err)
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Println(err)
+	}
+	err = response.Body.Close()
+	if err != nil {
+		log.Println(err)
+	}
+	return body
 }
 
 // Read a file and return the contents
