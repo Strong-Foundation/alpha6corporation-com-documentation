@@ -219,39 +219,6 @@ func isUrlValid(uri string) bool {
 	return err == nil                  // Return true if no error (i.e., valid URL)
 }
 
-// urlToFilename formats a safe filename from a URL string.
-// It replaces all non [a-z0-9] characters with '_' and ensures it ends in .pdf
-func urlToFilename(rawURL string) string {
-	// Convert to lowercase
-	lower := strings.ToLower(rawURL)
-	// Replace all non a-z0-9 characters with "_"
-	reNonAlnum := regexp.MustCompile(`[^a-z]`)
-	// Replace the invalid with valid stuff.
-	safe := reNonAlnum.ReplaceAllString(lower, "_")
-	// Collapse multiple underscores
-	safe = regexp.MustCompile(`_+`).ReplaceAllString(safe, "_")
-	// Trim leading/trailing underscores
-	safe = strings.Trim(safe, "_")
-	// Invalid substrings to remove
-	var invalidSubstrings = []string{
-		"https_assets_thermofisher_com_directwebviewer_private_document_aspx_prd_",
-	}
-	// Loop over the invalid.
-	for _, invalidPre := range invalidSubstrings {
-		safe = removeSubstring(safe, invalidPre)
-	}
-	// Add .pdf extension if missing
-	if getFileExtension(safe) != ".pdf" {
-		safe = safe + ".pdf"
-	}
-	return safe
-}
-
-// getFileExtension returns the file extension
-func getFileExtension(path string) string {
-	return filepath.Ext(path) // Use filepath to extract extension
-}
-
 // Remove all the duplicates from a slice and return the slice.
 func removeDuplicatesFromSlice(slice []string) []string {
 	check := make(map[string]bool)
@@ -263,32 +230,6 @@ func removeDuplicatesFromSlice(slice []string) []string {
 		}
 	}
 	return newReturnSlice
-}
-
-// Send a http get request to a given url and return the data from that url.
-func getDataFromURL(uri string) string {
-	response, err := http.Get(uri)
-	if err != nil {
-		log.Println(err)
-	}
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	err = response.Body.Close()
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println("Scraping:", uri)
-	return string(body)
-}
-
-// removeSubstring takes a string `input` and removes all occurrences of `toRemove` from it.
-func removeSubstring(input string, toRemove string) string {
-	// Use strings.ReplaceAll to replace all occurrences of `toRemove` with an empty string.
-	result := strings.ReplaceAll(input, toRemove, "")
-	// Return the modified string.
-	return result
 }
 
 // fileExists checks whether a file exists and is not a directory
